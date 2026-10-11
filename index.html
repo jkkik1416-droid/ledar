@@ -1,0 +1,2081 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>متجر ليدر  Ledar Store</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --gold: #d4af37;
+            --gold-light: #f3e5ab;
+            --gold-dark: #997514;
+            --bg-dark: #0a0a0a;
+            --bg-card: #141414;
+            --bg-card-light: #1e1e1e;
+            --text-main: #ffffff;
+            --text-muted: #9e9e9e;
+            --danger: #e74c3c;
+            --success: #2ecc71;
+            --warning: #f39c12;
+            --border: rgba(212, 175, 55, 0.25);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Cairo', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .mobile-container {
+            width: 100%;
+            max-width: 480px;
+            height: 100vh;
+            background: var(--bg-dark);
+            position: relative;
+            box-shadow: 0 0 40px rgba(212, 175, 55, 0.2);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        @media (min-width: 481px) {
+            .mobile-container {
+                height: 92vh;
+                border-radius: 28px;
+                border: 2px solid var(--gold);
+            }
+        }
+
+        /* نظام الإشعارات الداخلي (Toast) */
+        #toast-box {
+            position: absolute;
+            top: 15px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100px);
+            background: var(--bg-card);
+            border: 1px solid var(--gold);
+            color: #fff;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.85);
+            z-index: 9999;
+            transition: transform 0.4s ease, opacity 0.4s ease;
+            opacity: 0;
+            pointer-events: none;
+            max-width: 90%;
+            text-align: center;
+        }
+
+        #toast-box.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        .app-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+            flex-direction: column;
+            z-index: 10;
+            background: var(--bg-dark);
+        }
+
+        .app-screen.active {
+            display: flex;
+        }
+
+        .auth-wrapper {
+            flex: 1;
+            padding: 30px 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .auth-logo {
+            width: 95px;
+            height: 95px;
+            border: 3px solid var(--gold);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 42px;
+            color: var(--gold);
+            box-shadow: 0 0 25px rgba(212, 175, 55, 0.4);
+            margin-bottom: 22px;
+        }
+
+        .input-group {
+            width: 100%;
+            margin-bottom: 12px;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 13px;
+            color: var(--gold);
+            margin-bottom: 5px;
+            font-weight: 700;
+        }
+
+        .input-group input, .admin-input, select.admin-input, textarea.admin-input {
+            width: 100%;
+            padding: 12px 14px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            color: #fff;
+            font-size: 14px;
+            outline: none;
+            margin-bottom: 10px;
+        }
+
+        .gold-btn {
+            width: 100%;
+            padding: 13px;
+            background: linear-gradient(135deg, var(--gold-dark), var(--gold));
+            color: #000;
+            font-weight: 900;
+            font-size: 15px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(212, 175, 55, 0.35);
+            margin-top: 5px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .gold-btn:active {
+            transform: scale(0.98);
+        }
+
+        .app-header {
+            padding: 14px 18px;
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 5;
+        }
+
+        .app-header h1 {
+            font-size: 16px;
+            color: var(--gold);
+            font-weight: 800;
+        }
+
+        .main-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 14px;
+            padding-bottom: 75px;
+        }
+
+        .bottom-nav {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 65px;
+            background: var(--bg-card);
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            z-index: 20;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: var(--text-muted);
+            font-size: 11px;
+            cursor: pointer;
+            background: none;
+            border: none;
+        }
+
+        .nav-item i {
+            font-size: 18px;
+            margin-bottom: 3px;
+        }
+
+        .nav-item.active {
+            color: var(--gold);
+        }
+
+        /* شريط الأقسام */
+        .categories-bar {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            white-space: nowrap;
+            padding-bottom: 10px;
+            margin-bottom: 12px;
+            scrollbar-width: none;
+        }
+
+        .categories-bar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .cat-chip {
+            padding: 6px 14px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            font-size: 12px;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .cat-chip.active {
+            background: var(--gold);
+            color: #000;
+            font-weight: 700;
+            border-color: var(--gold);
+        }
+
+        /* شبكة المنتجات */
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .product-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .product-img {
+            width: 100%;
+            height: 125px;
+            object-fit: cover;
+            border-bottom: 1px solid var(--border);
+            background: #1a1a1a;
+        }
+
+        .product-info {
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            justify-content: space-between;
+        }
+
+        .product-id-tag {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            background: rgba(0,0,0,0.85);
+            color: var(--gold);
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            font-weight: 700;
+        }
+
+        .product-tag {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: rgba(0,0,0,0.85);
+            color: #fff;
+            font-size: 10px;
+            padding: 2px 7px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+        }
+
+        .product-title {
+            font-size: 13px;
+            font-weight: 700;
+            margin-bottom: 4px;
+            color: #fff;
+            display: -webkit-box;
+            -webkit-line-clamp: 1;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .product-price {
+            font-size: 13px;
+            color: var(--gold);
+            font-weight: 900;
+            margin-bottom: 6px;
+        }
+
+        .card-btn {
+            background: rgba(212, 175, 55, 0.15);
+            color: var(--gold);
+            border: 1px solid var(--border);
+            padding: 6px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        /* قناة تليجرام */
+        .tg-channel-header {
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border);
+            padding: 12px 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .tg-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .tg-avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            border: 2px solid var(--gold);
+            object-fit: cover;
+        }
+
+        .tg-post {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 12px;
+            margin-bottom: 12px;
+            position: relative;
+        }
+
+        .tg-post img {
+            width: 100%;
+            max-height: 220px;
+            object-fit: cover;
+            border-radius: 10px;
+            margin: 8px 0;
+        }
+
+        .tg-footer {
+            font-size: 11px;
+            color: var(--text-muted);
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 5px;
+        }
+
+        .tg-del-btn {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(231, 76, 60, 0.2);
+            border: 1px solid var(--danger);
+            color: var(--danger);
+            border-radius: 6px;
+            padding: 3px 8px;
+            font-size: 11px;
+            cursor: pointer;
+        }
+
+        /* الدردشة وضبط حجم الصور لمنع التمدد المفاجئ */
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .bubble {
+            max-width: 82%;
+            padding: 10px 14px;
+            border-radius: 14px;
+            font-size: 13px;
+            line-height: 1.4;
+            word-wrap: break-word;
+        }
+
+        .bubble.user {
+            background: rgba(212, 175, 55, 0.2);
+            border: 1px solid var(--border);
+            align-self: flex-start;
+        }
+
+        .bubble.admin {
+            background: var(--bg-card-light);
+            border: 1px solid #333;
+            align-self: flex-end;
+        }
+
+        /* تقييد حجم الصور داخل المحادثة بشكل صارم */
+        .bubble img {
+            max-width: 170px !important;
+            max-height: 170px !important;
+            width: auto;
+            height: auto;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-top: 6px;
+            display: block;
+            border: 1px solid var(--border);
+            cursor: pointer;
+        }
+
+        .chat-input-bar {
+            padding: 10px;
+            background: var(--bg-card);
+            border-top: 1px solid var(--border);
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .chat-input-bar input {
+            flex: 1;
+            padding: 10px 14px;
+            background: var(--bg-dark);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            color: #fff;
+            font-size: 13px;
+            outline: none;
+        }
+
+        .admin-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 14px;
+            margin-bottom: 15px;
+        }
+
+        .admin-card h3 {
+            font-size: 14px;
+            color: var(--gold);
+            margin-bottom: 10px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 5px;
+        }
+
+        .modal-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.85);
+            z-index: 2000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            padding: 15px;
+        }
+
+        .modal-card {
+            background: var(--bg-card);
+            border: 2px solid var(--gold);
+            padding: 20px;
+            border-radius: 18px;
+            width: 100%;
+            max-width: 380px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .order-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 10px;
+        }
+
+        .status-badge {
+            font-size: 11px;
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-weight: 700;
+        }
+        .status-pending { background: rgba(243, 156, 18, 0.2); color: var(--warning); border: 1px solid var(--warning); }
+        .status-accepted { background: rgba(46, 204, 113, 0.2); color: var(--success); border: 1px solid var(--success); }
+        .status-rejected { background: rgba(231, 76, 60, 0.2); color: var(--danger); border: 1px solid var(--danger); }
+        .status-unclear { background: rgba(230, 126, 34, 0.25); color: #e67e22; border: 1px solid #e67e22; }
+
+        .gallery-container {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            margin-bottom: 10px;
+            padding-bottom: 6px;
+        }
+
+        .gallery-img {
+            width: 140px;
+            height: 110px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+
+        .copy-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+            font-size: 12px;
+        }
+
+        .copy-btn {
+            background: rgba(212, 175, 55, 0.2);
+            color: var(--gold);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 3px 8px;
+            font-size: 11px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="mobile-container">
+
+    <!-- الإشعار الداخلي (Toast) -->
+    <div id="toast-box">
+        <i class="fa-solid fa-circle-info" id="toast-icon"></i>
+        <span id="toast-text"></span>
+    </div>
+
+    <!-- نافذة إدخال مخصصة للأدمن -->
+    <div class="modal-overlay" id="custom-prompt-modal">
+        <div class="modal-card">
+            <h3 id="prompt-modal-title" style="color:var(--gold); font-size:15px; margin-bottom:10px;">إدخال تفاصيل</h3>
+            <p id="prompt-modal-desc" style="font-size:12px; color:var(--text-muted); margin-bottom:10px;"></p>
+            <textarea id="prompt-modal-input" class="admin-input" rows="3" style="resize:none;"></textarea>
+            <div style="display:flex; gap:8px;">
+                <button class="gold-btn" id="prompt-confirm-btn">تأكيد وحفظ</button>
+                <button class="gold-btn" style="background:#333; color:#fff;" onclick="closePromptModal()">إلغاء</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 1. شاشة تسجيل الدخول -->
+    <div id="auth-screen" class="app-screen active">
+        <div class="auth-wrapper">
+            <div class="auth-logo"><i class="fa-solid fa-crown"></i></div>
+            <h2 style="color: var(--gold); margin-bottom: 5px; font-size: 22px; font-weight: 900;">متجر ليدر - Ledar Store</h2>
+            <p style="color: var(--text-muted); font-size: 12px; margin-bottom: 25px;">سجل الدخول باليوزر وكلمة المرور</p>
+            
+            <div class="input-group">
+                <label>اسم المستخدم (اليوزر)</label>
+                <input type="text" id="login-username" placeholder="اكتب يوزرك...">
+            </div>
+            <div class="input-group">
+                <label>كلمة المرور</label>
+                <input type="password" id="login-password" placeholder="••••••••">
+            </div>
+            <button class="gold-btn" onclick="handleLogin()">دخول للمتجر</button>
+        </div>
+    </div>
+
+    <!-- 2. السوق -->
+    <div id="shop-screen" class="app-screen">
+        <div class="app-header">
+            <h1>سوق الحسابات والألعاب</h1>
+            <div style="display:flex; gap:12px; font-size:18px; color:var(--gold); align-items:center;">
+                <i class="fa-solid fa-handshake" style="cursor:pointer;" onclick="openEscrowModal()" title="طلب وساطة بين طرفين"></i>
+                <i class="fa-solid fa-user-shield" id="admin-icon-btn" style="display:none; cursor:pointer;" onclick="switchTab('admin')"></i>
+            </div>
+        </div>
+        <div class="main-content">
+            <!-- كرت طلب الوساطة -->
+            <div style="background:linear-gradient(135deg, #1b1708, #2a2007); border:1px solid var(--gold); padding:10px 14px; border-radius:14px; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                    <div style="color:var(--gold); font-size:13px; font-weight:700;"><i class="fa-solid fa-shield-halved"></i> خدمة الوساطة المعتمدة 🤝</div>
+                    <div style="font-size:10px; color:var(--text-muted);">تسليم وضمان كامل بين الطرفين في متجر ليدر</div>
+                </div>
+                <button class="gold-btn" style="width:auto; padding:6px 12px; font-size:11px; margin:0;" onclick="openEscrowModal()">طلب وساطة</button>
+            </div>
+
+            <!-- شريط الأقسام (ديناميكي يدعم إضافة أقسام جديدة) -->
+            <div class="categories-bar" id="categories-bar-container"></div>
+
+            <div class="products-grid" id="products-container"></div>
+        </div>
+    </div>
+
+    <!-- 3. قناة التليجرام (حذف فوري + وقت حقيقي + بدون مشاهدات) -->
+    <div id="channel-screen" class="app-screen">
+        <div class="tg-channel-header">
+            <div class="tg-info">
+                <img id="ch-avatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150" class="tg-avatar">
+                <div>
+                    <h3 id="ch-title" style="font-size:13px; color:var(--gold);">LEDAR STORE VIP <i class="fa-solid fa-circle-check"></i></h3>
+                    <p style="font-size:11px; color:var(--text-muted);">قناة الإدارة الرسمية</p>
+                </div>
+            </div>
+            <div style="display:flex; gap:12px; align-items:center;">
+                <i class="fa-solid fa-pen-to-square" id="admin-ch-edit-btn" style="color:var(--gold); font-size:16px; cursor:pointer; display:none;" onclick="openChannelEdit()"></i>
+                <i class="fa-solid fa-arrow-right" onclick="switchTab('shop')" style="cursor:pointer; color:var(--gold); font-size:17px;"></i>
+            </div>
+        </div>
+        
+        <div class="main-content" id="channel-feed" style="padding-bottom: 20px;"></div>
+
+        <div id="admin-channel-bar" class="chat-input-bar" style="display:none;">
+            <input type="file" id="ch-file-input" accept="image/*" style="display:none;" onchange="channelFilePicked()">
+            <button onclick="document.getElementById('ch-file-input').click()" style="background:none; border:none; color:var(--gold); font-size:18px; cursor:pointer;"><i class="fa-solid fa-image"></i></button>
+            <input type="text" id="ch-text-input" placeholder="اكتب منشوراً في القناة كأدمن...">
+            <button onclick="postToChannelNow()" style="width:36px; height:36px; background:var(--gold); border:none; border-radius:50%; color:#000; cursor:pointer;"><i class="fa-solid fa-paper-plane"></i></button>
+        </div>
+
+        <div id="user-channel-lock" style="padding:10px; background:var(--bg-card); text-align:center; font-size:12px; color:var(--text-muted); border-top:1px solid var(--border);">
+            <i class="fa-solid fa-lock" style="color:var(--gold);"></i> القناة مخصصة لمنشورات وإعلانات إدارة متجر ليدر فقط
+        </div>
+    </div>
+
+    <!-- 4. السلة -->
+    <div id="cart-screen" class="app-screen">
+        <div class="app-header"><h1>سلة المشتريات</h1></div>
+        <div class="main-content" id="cart-items-container"></div>
+    </div>
+
+    <!-- 5. الدعم الفني -->
+    <div id="chat-screen" class="app-screen">
+        <div class="app-header">
+            <h1 id="chat-header-title">مراسلة الإدارة</h1>
+            <i class="fa-solid fa-arrow-right" onclick="switchTab('shop')" style="cursor:pointer; color:var(--gold);"></i>
+        </div>
+
+        <div id="user-chat-view" class="chat-container">
+            <div class="chat-messages" id="user-chat-box"></div>
+            <div class="chat-input-bar">
+                <input type="file" id="user-chat-file" accept="image/*" style="display:none;" onchange="userSendImageMsg()">
+                <button onclick="document.getElementById('user-chat-file').click()" style="background:none; border:none; color:var(--gold); font-size:18px; cursor:pointer;"><i class="fa-solid fa-image"></i></button>
+                <input type="text" id="user-chat-txt" placeholder="اكتب رسالتك للإدارة...">
+                <button onclick="userSendTextMsg()" style="width:36px; height:36px; background:var(--gold); border:none; border-radius:50%; color:#000; cursor:pointer;"><i class="fa-solid fa-paper-plane"></i></button>
+            </div>
+        </div>
+
+        <div id="admin-chat-view" style="display:none; flex-direction:column; height:100%;">
+            <div id="admin-chats-list" class="main-content" style="padding:10px;">
+                <p style="font-size:13px; color:var(--gold); margin-bottom:10px;">رسائل وطلبات الزبائن الواردة:</p>
+                <div id="admin-conversations-box"></div>
+            </div>
+
+            <div id="admin-reply-box" style="display:none; flex-direction:column; height:100%;">
+                <div style="padding:8px 14px; background:var(--bg-card-light); display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border);">
+                    <span id="replying-to-user" style="color:var(--gold); font-weight:700; font-size:13px;">محادثة: </span>
+                    <button onclick="backToAdminChatList()" style="background:none; border:none; color:var(--gold); font-size:12px; cursor:pointer;"><i class="fa-solid fa-chevron-left"></i> رجوع للقائمة</button>
+                </div>
+
+                <div id="admin-customer-order-actions" style="background:#0f0f0f; padding:10px; border-bottom:1px solid var(--border); display:none;"></div>
+                <div class="chat-messages" id="admin-selected-chat-messages"></div>
+                <div class="chat-input-bar">
+                    <input type="text" id="admin-reply-input" placeholder="اكتب ردك كإدارة للزبون...">
+                    <button onclick="adminSendReplyNow()" style="width:36px; height:36px; background:var(--gold); border:none; border-radius:50%; color:#000; cursor:pointer;"><i class="fa-solid fa-paper-plane"></i></button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 6. قسم حسابي -->
+    <div id="profile-screen" class="app-screen">
+        <div class="app-header"><h1>حسابي الشخصي</h1></div>
+        <div class="main-content" style="display:flex; flex-direction:column; align-items:center; padding-top:15px;">
+            <div style="width:90px; height:90px; border-radius:50%; border:3px solid var(--gold); overflow:hidden; margin-bottom:8px; background:#1e1e1e;">
+                <img id="my-avatar-img" src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150" style="width:100%; height:100%; object-fit:cover;">
+            </div>
+            <h3 id="my-name-display" style="color:var(--gold); font-size:16px; margin-bottom:2px;">المستخدم</h3>
+            <p id="my-username-display" style="color:var(--text-muted); font-size:12px; margin-bottom:15px;">@user</p>
+
+            <button class="gold-btn" style="margin-bottom:15px;" onclick="openMyOrdersModal()">
+                <i class="fa-solid fa-box-open"></i> طلباتي وخزنة تسليم الحسابات
+            </button>
+
+            <div class="admin-card" style="width:100%;">
+                <h3>تعديل الملف الشخصي</h3>
+                <input type="text" id="edit-display-name" class="admin-input" placeholder="اسمك الجديد...">
+                <div class="input-group">
+                    <label>تغيير الصورة الشخصية من الاستوديو</label>
+                    <input type="file" id="edit-avatar-input" accept="image/*" class="admin-input">
+                </div>
+                <button class="gold-btn" onclick="saveProfileData()">حفظ التعديلات</button>
+            </div>
+
+            <button class="gold-btn" style="background:var(--danger); color:#fff; margin-top:10px;" onclick="logoutSession()"><i class="fa-solid fa-right-from-bracket"></i> تسجيل خروج</button>
+        </div>
+    </div>
+
+    <!-- 7. لوحة تحكم الأدمن -->
+    <div id="admin-screen" class="app-screen">
+        <div class="app-header">
+            <h1>لوحة تحكم الأدمن</h1>
+            <i class="fa-solid fa-arrow-right" onclick="switchTab('shop')" style="cursor:pointer; color:var(--gold);"></i>
+        </div>
+        <div class="main-content">
+            <!-- إضافة أقسام جديدة للسوق -->
+            <div class="admin-card">
+                <h3><i class="fa-solid fa-folder-plus"></i> إضافة قسم جديد للسوق</h3>
+                <input type="text" id="new-cat-name-input" class="admin-input" placeholder="اكتب اسم القسم الجديد (مثال: شحن تيك توك)...">
+                <button class="gold-btn" onclick="adminAddNewCategory()">إضافة القسم للسوق الآن</button>
+            </div>
+
+            <!-- إضافة سلعة -->
+            <div class="admin-card">
+                <h3>إضافة سلعة مع صور متعددة وفيديو</h3>
+                <input type="text" id="p-name" class="admin-input" placeholder="اسم المنتج">
+                
+                <div class="input-group">
+                    <label>اختر قسم السلعة:</label>
+                    <select id="p-category" class="admin-input"></select>
+                </div>
+
+                <div class="input-group">
+                    <label>نوع الربط وأمان الحساب:</label>
+                    <input type="text" id="p-link-type" class="admin-input" placeholder="مثال: كونامي متاح للنقل، تويتر، داخلي...">
+                </div>
+
+                <div class="input-group">
+                    <label>مدة الضمان:</label>
+                    <input type="text" id="p-warranty" class="admin-input" placeholder="مثال: 24 ساعة، ضمان أسبوع...">
+                </div>
+
+                <div class="input-group">
+                    <label>صور السلعة من الاستوديو (يمكن اختيار عدة صور):</label>
+                    <input type="file" id="p-img-files" class="admin-input" accept="image/*" multiple>
+                </div>
+
+                <div class="input-group">
+                    <label>رابط فيديو الحساب (اختياري):</label>
+                    <input type="text" id="p-video-url" class="admin-input" placeholder="رابط فيديو مباشر أو استعراض للحساب...">
+                </div>
+
+                <div style="background:#000; border:1px solid var(--border); padding:10px; border-radius:10px; margin-bottom:12px;">
+                    <div style="color:var(--gold); font-size:12px; font-weight:700; margin-bottom:6px;">🔐 بيانات الحساب السرية (تصل للمشتري عند الموافقة):</div>
+                    <input type="text" id="p-acc-email" class="admin-input" placeholder="إيميل أو يوزر الحساب...">
+                    <input type="text" id="p-acc-pass" class="admin-input" placeholder="كلمة سر الحساب...">
+                </div>
+
+                <input type="text" id="p-price" class="admin-input" placeholder="السعر (مثلاً: 25,000 د.ع)">
+                <input type="text" id="p-asia" class="admin-input" placeholder="رقم كارت آسيا (اتركه فارغاً إن لم يتوفر)">
+                <input type="text" id="p-ather" class="admin-input" placeholder="رقم كارت أثير (اتركه فارغاً إن لم يتوفر)">
+                <input type="text" id="p-master" class="admin-input" placeholder="رقم ماستر كارد (اتركه فارغاً إن لم يتوفر)">
+                <input type="number" id="p-qty" class="admin-input" placeholder="العدد المتوفر" value="1">
+                <input type="text" id="p-id" class="admin-input" placeholder="آيدي السلعة الفريد (مثلاً: 101)">
+                <button class="gold-btn" onclick="publishProductNow()">نشر السلعة في السوق الآن</button>
+            </div>
+
+            <div class="admin-card">
+                <h3>حذف سلعة من السوق</h3>
+                <input type="text" id="del-p-id" class="admin-input" placeholder="اكتب آيدي السلعة لحذفها">
+                <button class="gold-btn" style="background:var(--danger); color:#fff;" onclick="deleteProductNow()">حذف المنتج نهائياً</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- نافذة طلب وساطة -->
+    <div class="modal-overlay" id="escrow-modal">
+        <div class="modal-card">
+            <h3 style="color:var(--gold); font-size:16px; margin-bottom:6px;"><i class="fa-solid fa-handshake"></i> طلب وساطة معتمدة بين طرفين</h3>
+            <p style="font-size:11px; color:var(--text-muted); margin-bottom:12px;">يتم استلام الحساب وفحصه وضمان تسليم المبلغ للطرفين بأمان تام تحت إشراف إدارة متجر ليدر.</p>
+            
+            <div class="input-group">
+                <label>معرف / رقم البائع (تليجرام):</label>
+                <input type="text" id="escrow-seller" class="admin-input" placeholder="@seller_username">
+            </div>
+            <div class="input-group">
+                <label>معرف / رقم المشتري (تليجرام):</label>
+                <input type="text" id="escrow-buyer" class="admin-input" placeholder="@buyer_username">
+            </div>
+            <div class="input-group">
+                <label>نوع السلعة / الحساب:</label>
+                <input type="text" id="escrow-item" class="admin-input" placeholder="مثال: حساب بيس 3100 قوة، ببجي...">
+            </div>
+            <div class="input-group">
+                <label>المبلغ المتفق عليه وطريقة الدفع:</label>
+                <input type="text" id="escrow-amount" class="admin-input" placeholder="مثال: 45,000 د.ع آسيا">
+            </div>
+            <div class="input-group">
+                <label>شروط أو ملاحظات خاصة:</label>
+                <textarea id="escrow-notes" class="admin-input" rows="2" placeholder="أي شروط أو ملحقات متفق عليها..."></textarea>
+            </div>
+
+            <button class="gold-btn" onclick="submitEscrowRequest()">إرسال طلب الوساطة للإدارة</button>
+            <button class="gold-btn" style="background:#333; color:#fff; margin-top:6px;" onclick="closeEscrowModal()">إلغاء</button>
+        </div>
+    </div>
+
+    <!-- نافذة تفاصيل السلعة -->
+    <div class="modal-overlay" id="product-details-modal">
+        <div class="modal-card" id="modal-details-content"></div>
+    </div>
+
+    <!-- نافذة إتمام الدفع -->
+    <div class="modal-overlay" id="checkout-modal">
+        <div class="modal-card" id="modal-checkout-content"></div>
+    </div>
+
+    <!-- نافذة طلباتي للمشتري -->
+    <div class="modal-overlay" id="my-orders-modal">
+        <div class="modal-card">
+            <h3 style="color:var(--gold); margin-bottom:12px; font-size:15px;"><i class="fa-solid fa-vault"></i> سجل طلباتي وخزنة الحسابات</h3>
+            <div id="my-orders-list"></div>
+            <button class="gold-btn" style="background:#333; color:#fff; margin-top:10px;" onclick="document.getElementById('my-orders-modal').style.display='none'">إغلاق</button>
+        </div>
+    </div>
+
+    <!-- نافذة تعديل القناة -->
+    <div class="modal-overlay" id="channel-modal">
+        <div class="modal-card">
+            <h3 style="color:var(--gold); margin-bottom:12px; font-size:15px;">تعديل معلومات القناة</h3>
+            <input type="text" id="edit-ch-title" class="admin-input" placeholder="اسم القناة الجديد">
+            <div class="input-group">
+                <label>صورة القناة الجديدة من الاستوديو</label>
+                <input type="file" id="edit-ch-avatar" accept="image/*" class="admin-input">
+            </div>
+            <button class="gold-btn" onclick="saveChannelSettings()">حفظ التعديلات</button>
+            <button class="gold-btn" style="background:#333; color:#fff; margin-top:6px;" onclick="document.getElementById('channel-modal').style.display='none'">إلغاء</button>
+        </div>
+    </div>
+
+    <!-- شريط التنقل السفلي -->
+    <div class="bottom-nav" id="bottom-nav-bar" style="display: none;">
+        <button class="nav-item active" onclick="switchTab('shop')"><i class="fa-solid fa-store"></i><span>السوق</span></button>
+        <button class="nav-item" onclick="switchTab('channel')"><i class="fa-solid fa-bullhorn"></i><span>القناة</span></button>
+        <button class="nav-item" onclick="switchTab('cart')"><i class="fa-solid fa-cart-shopping"></i><span>السلة</span></button>
+        <button class="nav-item" onclick="switchTab('chat')"><i class="fa-solid fa-headset"></i><span>الدعم</span></button>
+        <button class="nav-item" onclick="switchTab('profile')"><i class="fa-solid fa-user"></i><span>حسابي</span></button>
+    </div>
+</div>
+
+<script>
+    const IMGBB_API_KEY = "2e845412cb171d0dfbb5af72cadf3389";
+    const TELEGRAM_BOT_TOKEN = "8787066937:AAEzAS2Lwg-YYlr35bBVTWpi3mI6TTbOxyA";
+    const TELEGRAM_CHAT_ID = "8740614633";
+
+    // إيموجيات التلجرام البريميوم المخصصة
+    const TG_BADGE_VIP = '<tg-emoji emoji-id="5357399972893452979">👑</tg-emoji>';
+    const TG_EMOJI_ASIA = '<tg-emoji emoji-id="5814330694427479992">📱</tg-emoji>';
+    const TG_EMOJI_ATHER = '<tg-emoji emoji-id="5307856129269706833">📲</tg-emoji>';
+    const TG_EMOJI_MASTER = '<tg-emoji emoji-id="5390833853751386198">💳</tg-emoji>';
+
+    function showToast(text, icon = 'fa-circle-check', isError = false) {
+        const box = document.getElementById('toast-box');
+        const iconEl = document.getElementById('toast-icon');
+        const textEl = document.getElementById('toast-text');
+
+        textEl.innerText = text;
+        iconEl.className = 'fa-solid ' + icon;
+        box.style.borderColor = isError ? 'var(--danger)' : 'var(--gold)';
+        box.classList.add('show');
+
+        setTimeout(() => {
+            box.classList.remove('show');
+        }, 2600);
+    }
+
+    let currentPromptCallback = null;
+    function openPromptModal(title, desc, placeholder, callback) {
+        document.getElementById('prompt-modal-title').innerText = title;
+        document.getElementById('prompt-modal-desc').innerText = desc;
+        document.getElementById('prompt-modal-input').placeholder = placeholder;
+        document.getElementById('prompt-modal-input').value = '';
+        currentPromptCallback = callback;
+        document.getElementById('custom-prompt-modal').style.display = 'flex';
+    }
+
+    function closePromptModal() {
+        document.getElementById('custom-prompt-modal').style.display = 'none';
+        currentPromptCallback = null;
+    }
+
+    document.getElementById('prompt-confirm-btn').onclick = function() {
+        const val = document.getElementById('prompt-modal-input').value.trim();
+        if (currentPromptCallback) {
+            currentPromptCallback(val);
+        }
+        closePromptModal();
+    };
+
+    async function uploadImageFile(file) {
+        if (!file) return null;
+        try {
+            const formData = new FormData();
+            formData.append("image", file);
+            const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
+                method: "POST",
+                body: formData
+            });
+            const data = await res.json();
+            if (data.success && data.data && data.data.url) {
+                return data.data.url;
+            }
+        } catch (e) {
+            console.log("Fallback Base64");
+        }
+        return await readFileAsDataURL(file);
+    }
+
+    function readFileAsDataURL(file) {
+        return new Promise((resolve) => {
+            if (!file) return resolve(null);
+            const reader = new FileReader();
+            reader.onload = (e) => resolve(e.target.result);
+            reader.onerror = () => resolve(null);
+            reader.readAsDataURL(file);
+        });
+    }
+
+    function copyText(txt) {
+        navigator.clipboard.writeText(txt).then(() => {
+            showToast("تم النسخ: " + txt);
+        }).catch(() => {
+            showToast("تم النسخ: " + txt);
+        });
+    }
+
+    function handleLogin() {
+        const username = document.getElementById('login-username').value.trim();
+        const password = document.getElementById('login-password').value.trim();
+
+        if (!username || !password) {
+            showToast('يرجى كتابة اليوزر وكلمة المرور', 'fa-triangle-exclamation', true);
+            return;
+        }
+
+        const user = {
+            username: username,
+            password: password,
+            displayName: username,
+            avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150'
+        };
+
+        localStorage.setItem('elite_current_user', JSON.stringify(user));
+        initAppSession();
+        showToast('أهلاً بك يا ' + username + ' في متجر ليدر');
+    }
+
+    function logoutSession() {
+        localStorage.removeItem('elite_current_user');
+        location.reload();
+    }
+
+    function getCurrentUser() {
+        const s = localStorage.getItem('elite_current_user');
+        return s ? JSON.parse(s) : null;
+    }
+
+    function isAdmin() {
+        const u = getCurrentUser();
+        return u && u.username === 'nnn' && u.password === 'ABD';
+    }
+
+    function initAppSession() {
+        const u = getCurrentUser();
+        if (!u) return;
+
+        document.getElementById('auth-screen').classList.remove('active');
+        document.getElementById('shop-screen').classList.add('active');
+        document.getElementById('bottom-nav-bar').style.display = 'flex';
+
+        const savedAvatar = localStorage.getItem('avatar_' + u.username) || u.avatar;
+        const savedName = localStorage.getItem('name_' + u.username) || u.displayName;
+        document.getElementById('my-avatar-img').src = savedAvatar;
+        document.getElementById('my-name-display').innerText = savedName;
+        document.getElementById('my-username-display').innerText = '@' + u.username;
+
+        if (isAdmin()) {
+            document.getElementById('admin-icon-btn').style.display = 'block';
+            document.getElementById('admin-ch-edit-btn').style.display = 'block';
+            document.getElementById('admin-channel-bar').style.display = 'flex';
+            document.getElementById('user-channel-lock').style.display = 'none';
+        } else {
+            document.getElementById('admin-icon-btn').style.display = 'none';
+            document.getElementById('admin-ch-edit-btn').style.display = 'none';
+            document.getElementById('admin-channel-bar').style.display = 'none';
+            document.getElementById('user-channel-lock').style.display = 'block';
+        }
+
+        renderCategories();
+        loadProducts();
+        renderChannelPostsDirectly();
+    }
+
+    async function saveProfileData() {
+        const u = getCurrentUser();
+        const newName = document.getElementById('edit-display-name').value.trim();
+        const file = document.getElementById('edit-avatar-input').files[0];
+
+        if (newName) {
+            localStorage.setItem('name_' + u.username, newName);
+            document.getElementById('my-name-display').innerText = newName;
+        }
+
+        if (file) {
+            const avatarUrl = await uploadImageFile(file);
+            if (avatarUrl) {
+                localStorage.setItem('avatar_' + u.username, avatarUrl);
+                document.getElementById('my-avatar-img').src = avatarUrl;
+            }
+        }
+
+        showToast('تم حفظ وتحديث ملفك بنجاح');
+        document.getElementById('edit-display-name').value = '';
+        document.getElementById('edit-avatar-input').value = '';
+    }
+
+    function switchTab(tab) {
+        document.querySelectorAll('.app-screen').forEach(s => s.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+
+        const bottomNav = document.getElementById('bottom-nav-bar');
+
+        if (tab === 'shop') {
+            document.getElementById('shop-screen').classList.add('active');
+            bottomNav.style.display = 'flex';
+        } else if (tab === 'channel') {
+            document.getElementById('channel-screen').classList.add('active');
+            bottomNav.style.display = 'none';
+            renderChannelPostsDirectly();
+        } else if (tab === 'cart') {
+            document.getElementById('cart-screen').classList.add('active');
+            bottomNav.style.display = 'flex';
+            renderCart();
+        } else if (tab === 'chat') {
+            document.getElementById('chat-screen').classList.add('active');
+            bottomNav.style.display = 'none';
+            openChatSection();
+        } else if (tab === 'profile') {
+            document.getElementById('profile-screen').classList.add('active');
+            bottomNav.style.display = 'flex';
+        } else if (tab === 'admin') {
+            document.getElementById('admin-screen').classList.add('active');
+            bottomNav.style.display = 'flex';
+        }
+    }
+
+    // ----------------- إدارة الأقسام الديناميكية -----------------
+    const defaultCategories = ['بيس', 'ببجي', 'لودو', 'هدايا تلجرام', 'أرقام تلجرام', 'حسابات تلجرام', 'اشتراك تلجرام بريميوم'];
+
+    function getCategoriesList() {
+        return JSON.parse(localStorage.getItem('elite_categories') || JSON.stringify(defaultCategories));
+    }
+
+    function saveCategoriesList(list) {
+        localStorage.setItem('elite_categories', JSON.stringify(list));
+    }
+
+    let currentCategoryFilter = 'بيس';
+
+    function renderCategories() {
+        const cats = getCategoriesList();
+        const barContainer = document.getElementById('categories-bar-container');
+        const selectContainer = document.getElementById('p-category');
+
+        barContainer.innerHTML = '';
+        selectContainer.innerHTML = '';
+
+        cats.forEach((cat, index) => {
+            const isAct = cat === currentCategoryFilter;
+            barContainer.innerHTML += `<div class="cat-chip ${isAct ? 'active' : ''}" onclick="filterCategory('${cat}')">${cat}</div>`;
+            selectContainer.innerHTML += `<option value="${cat}">${cat}</option>`;
+        });
+    }
+
+    function filterCategory(cat) {
+        currentCategoryFilter = cat;
+        document.querySelectorAll('.cat-chip').forEach(el => {
+            el.classList.toggle('active', el.innerText === cat);
+        });
+        loadProducts();
+    }
+
+    function adminAddNewCategory() {
+        const inp = document.getElementById('new-cat-name-input');
+        const newCat = inp.value.trim();
+
+        if (!newCat) {
+            showToast('اكتب اسم القسم أولاً', 'fa-triangle-exclamation', true);
+            return;
+        }
+
+        const cats = getCategoriesList();
+        if (cats.includes(newCat)) {
+            showToast('هذا القسم موجود بالفعل!', 'fa-triangle-exclamation', true);
+            return;
+        }
+
+        cats.push(newCat);
+        saveCategoriesList(cats);
+        renderCategories();
+        inp.value = '';
+        showToast(`تمت إضافة قسم (${newCat}) للسوق بنجاح`);
+    }
+
+    // ----------------- إدارة السلع -----------------
+    function getStoredProducts() {
+        return JSON.parse(localStorage.getItem('elite_products') || '[]');
+    }
+
+    function saveStoredProducts(list) {
+        localStorage.setItem('elite_products', JSON.stringify(list));
+    }
+
+    async function publishProductNow() {
+        const name = document.getElementById('p-name').value.trim();
+        const category = document.getElementById('p-category').value;
+        const linkType = document.getElementById('p-link-type').value.trim() || 'ربط أساسي';
+        const warranty = document.getElementById('p-warranty').value.trim() || '24 ساعة';
+        const videoUrl = document.getElementById('p-video-url').value.trim();
+        const accEmail = document.getElementById('p-acc-email').value.trim();
+        const accPass = document.getElementById('p-acc-pass').value.trim();
+        const price = document.getElementById('p-price').value.trim();
+        const asia = document.getElementById('p-asia').value.trim();
+        const ather = document.getElementById('p-ather').value.trim();
+        const master = document.getElementById('p-master').value.trim();
+        const qty = document.getElementById('p-qty').value.trim() || '1';
+        const productId = document.getElementById('p-id').value.trim();
+        const files = document.getElementById('p-img-files').files;
+
+        if (!name || !price || !productId) {
+            showToast('يرجى ملء الحقول الأساسية: الاسم، السعر، والآيدي', 'fa-triangle-exclamation', true);
+            return;
+        }
+
+        showToast('جاري رفع الصور وتجهيز السلعة...');
+        let imagesList = [];
+
+        if (files && files.length > 0) {
+            for (let i = 0; i < files.length; i++) {
+                const url = await uploadImageFile(files[i]);
+                if (url) imagesList.push(url);
+            }
+        }
+
+        if (imagesList.length === 0) {
+            imagesList.push('https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=300');
+        }
+
+        const newProduct = {
+            id: productId,
+            name: name,
+            category: category,
+            linkType: linkType,
+            warranty: warranty,
+            videoUrl: videoUrl,
+            accEmail: accEmail,
+            accPass: accPass,
+            price: price,
+            asia: asia,
+            ather: ather,
+            master: master,
+            qty: qty,
+            images: imagesList
+        };
+
+        const list = getStoredProducts();
+        list.unshift(newProduct);
+        saveStoredProducts(list);
+
+        showToast('تم نشر السلعة في قسم (' + category + ') بنجاح!');
+
+        document.getElementById('p-name').value = '';
+        document.getElementById('p-link-type').value = '';
+        document.getElementById('p-warranty').value = '';
+        document.getElementById('p-video-url').value = '';
+        document.getElementById('p-acc-email').value = '';
+        document.getElementById('p-acc-pass').value = '';
+        document.getElementById('p-price').value = '';
+        document.getElementById('p-asia').value = '';
+        document.getElementById('p-ather').value = '';
+        document.getElementById('p-master').value = '';
+        document.getElementById('p-id').value = '';
+        document.getElementById('p-img-files').value = '';
+
+        loadProducts();
+        switchTab('shop');
+    }
+
+    function deleteProductNow() {
+        const targetId = document.getElementById('del-p-id').value.trim();
+        if (!targetId) return;
+
+        let list = getStoredProducts();
+        const orig = list.length;
+        list = list.filter(p => p.id !== targetId);
+
+        if (list.length < orig) {
+            saveStoredProducts(list);
+            showToast('تم حذف السلعة نهائياً');
+            document.getElementById('del-p-id').value = '';
+            loadProducts();
+        } else {
+            showToast('لم يتم العثور على سلعة بهذا الآيدي', 'fa-triangle-exclamation', true);
+        }
+    }
+
+    function loadProducts() {
+        const container = document.getElementById('products-container');
+        container.innerHTML = '';
+        let list = getStoredProducts();
+
+        list = list.filter(p => p.category === currentCategoryFilter);
+
+        if (list.length === 0) {
+            container.innerHTML = `<p style="grid-column: span 2; text-align:center; color:var(--text-muted); padding:30px;">لا توجد سلع معروضة في قسم (${currentCategoryFilter}) حالياً</p>`;
+            return;
+        }
+
+        list.forEach(p => {
+            const mainImg = (p.images && p.images.length > 0) ? p.images[0] : (p.img || 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=300');
+            container.innerHTML += `
+                <div class="product-card">
+                    <span class="product-id-tag">#${p.id}</span>
+                    <span class="product-tag">${p.category}</span>
+                    <img src="${mainImg}" class="product-img">
+                    <div class="product-info">
+                        <div>
+                            <div class="product-title">${p.name}</div>
+                            <div style="font-size:10px; color:var(--text-muted); margin-bottom:4px;">🔗 ${p.linkType}</div>
+                            <div class="product-price">${p.price}</div>
+                        </div>
+                        <button class="card-btn" onclick="openProductDetailsModal('${p.id}')">تفاصيل وصور الحساب</button>
+                    </div>
+                </div>
+            `;
+        });
+    }
+
+    function openProductDetailsModal(id) {
+        const list = getStoredProducts();
+        const p = list.find(item => item.id === id);
+        if (!p) return;
+
+        const imgs = p.images || [p.img || 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=300'];
+        let galleryHtml = '<div class="gallery-container">';
+        imgs.forEach(imgUrl => {
+            galleryHtml += `<img src="${imgUrl}" class="gallery-img" onclick="window.open('${imgUrl}', '_blank')">`;
+        });
+        galleryHtml += '</div>';
+
+        let videoHtml = '';
+        if (p.videoUrl) {
+            videoHtml = `
+                <div style="margin-bottom:10px; background:#000; padding:8px; border-radius:8px; border:1px solid var(--border);">
+                    <div style="color:var(--gold); font-size:12px; font-weight:700; margin-bottom:4px;"><i class="fa-solid fa-video"></i> فيديو استعراض الحساب:</div>
+                    <a href="${p.videoUrl}" target="_blank" style="color:#fff; font-size:12px; text-decoration:underline;">اضغط هنا لمشاهدة الفيديو بالكامل</a>
+                </div>
+            `;
+        }
+
+        document.getElementById('modal-details-content').innerHTML = `
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                <h3 style="color:var(--gold); font-size:16px;">${p.name}</h3>
+                <span style="background:var(--bg-dark); border:1px solid var(--gold); color:var(--gold); font-size:11px; padding:3px 8px; border-radius:6px; font-weight:700;">آيدي: #${p.id}</span>
+            </div>
+
+            <div style="font-size:11px; color:var(--text-muted); margin-bottom:4px;">معرض صور الحساب:</div>
+            ${galleryHtml}
+
+            ${videoHtml}
+
+            <div style="font-size:14px; font-weight:900; color:var(--gold); margin-bottom:8px;">السعر: ${p.price}</div>
+            
+            <div style="font-size:12px; margin-bottom:10px; background:var(--bg-dark); padding:10px; border-radius:8px; border:1px solid var(--border);">
+                <div style="color:var(--gold); font-weight:700; margin-bottom:4px;">🛡️ أمان الحساب والربط:</div>
+                • القسم: <b>${p.category}</b><br>
+                • نوع الربط: <b>${p.linkType}</b><br>
+                • الضمان: <b>${p.warranty}</b>
+            </div>
+
+            <div style="display:flex; gap:8px;">
+                <button class="gold-btn" onclick="closeProductDetailsModal(); openCheckoutModal('${p.id}');">شراء وإتمام الدفع</button>
+                <button class="gold-btn" style="background:#333; color:#fff;" onclick="closeProductDetailsModal()">إغلاق</button>
+            </div>
+        `;
+
+        document.getElementById('product-details-modal').style.display = 'flex';
+    }
+
+    function closeProductDetailsModal() {
+        document.getElementById('product-details-modal').style.display = 'none';
+    }
+
+    let currentBuyingProduct = null;
+
+    function openCheckoutModal(id) {
+        const list = getStoredProducts();
+        const p = list.find(item => item.id === id);
+        if (!p) return;
+        currentBuyingProduct = p;
+
+        document.getElementById('modal-checkout-content').innerHTML = `
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                <h3 style="color:var(--gold); font-size:15px;">إتمام دفع السلعة</h3>
+                <span style="font-size:11px; color:var(--gold);">آيدي: #${p.id}</span>
+            </div>
+            <div style="font-size:13px; font-weight:900; color:#fff; margin-bottom:6px;">${p.name} - السعر: ${p.price}</div>
+            
+            <div style="font-size:12px; margin-bottom:12px; background:var(--bg-dark); padding:10px; border-radius:8px; border:1px solid var(--border);">
+                <div style="color:var(--gold); font-weight:700; margin-bottom:6px;">💳 أرقام تحويل المتجر (اضغط نسخ):</div>
+                <div class="copy-row">
+                    <span>آسيا: <b>${p.asia || 'غير متوفر'}</b></span>
+                    ${p.asia ? `<button class="copy-btn" onclick="copyText('${p.asia}')"><i class="fa-solid fa-copy"></i> نسخ</button>` : ''}
+                </div>
+                <div class="copy-row">
+                    <span>أثير: <b>${p.ather || 'غير متوفر'}</b></span>
+                    ${p.ather ? `<button class="copy-btn" onclick="copyText('${p.ather}')"><i class="fa-solid fa-copy"></i> نسخ</button>` : ''}
+                </div>
+                <div class="copy-row">
+                    <span>ماستر كارد: <b>${p.master || 'غير متوفر'}</b></span>
+                    ${p.master ? `<button class="copy-btn" onclick="copyText('${p.master}')"><i class="fa-solid fa-copy"></i> نسخ</button>` : ''}
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label style="color:var(--danger); font-size:12px;"><i class="fa-solid fa-asterisk"></i> الرقم الذي حولت منه الرصيد (إجباري):</label>
+                <input type="text" id="sender-phone-input" placeholder="اكتب رقمك الذي حولت منه..." class="admin-input">
+            </div>
+
+            <div class="input-group">
+                <label style="color:var(--danger); font-size:12px;"><i class="fa-solid fa-asterisk"></i> إرفاق صورة إيصال التحويل (إجباري):</label>
+                <input type="file" id="receipt-upload-input" accept="image/*" class="admin-input">
+            </div>
+
+            <button class="gold-btn" onclick="confirmOrderPayment()">إتمام الدفع وإرسال الطلب</button>
+            <button class="gold-btn" style="background:#333; color:#fff; margin-top:6px;" onclick="closeCheckoutModal()">إلغاء</button>
+        `;
+        document.getElementById('checkout-modal').style.display = 'flex';
+    }
+
+    function closeCheckoutModal() {
+        document.getElementById('checkout-modal').style.display = 'none';
+        currentBuyingProduct = null;
+    }
+
+    async function confirmOrderPayment() {
+        const senderPhone = document.getElementById('sender-phone-input').value.trim();
+        const fileInput = document.getElementById('receipt-upload-input');
+
+        if (!senderPhone) {
+            showToast('يجب كتابة الرقم الذي قمت بالتحويل منه', 'fa-triangle-exclamation', true);
+            return;
+        }
+
+        if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
+            showToast('يرجى إرفاق صورة إيصال التحويل لإتمام الطلب', 'fa-triangle-exclamation', true);
+            return;
+        }
+
+        const u = getCurrentUser();
+        const p = currentBuyingProduct;
+        const orderId = 'ORD-' + Math.floor(100000 + Math.random() * 900000);
+        const receiptFile = fileInput.files[0];
+
+        showToast('جاري تسجيل الطلب وإرسال التنبيه للبوت...');
+        const receiptUrl = await uploadImageFile(receiptFile);
+
+        const allOrders = JSON.parse(localStorage.getItem('elite_orders') || '[]');
+        const newOrder = {
+            orderId: orderId,
+            username: u.username,
+            productName: p.name,
+            productId: p.id,
+            price: p.price,
+            category: p.category,
+            linkType: p.linkType,
+            warranty: p.warranty,
+            asia: p.asia || 'غير متوفر',
+            ather: p.ather || 'غير متوفر',
+            master: p.master || 'غير متوفر',
+            senderPhone: senderPhone,
+            receiptImg: receiptUrl,
+            status: 'pending',
+            statusNote: '',
+            accountCreds: (p.accEmail || p.accPass) ? `الإيميل: ${p.accEmail || 'غير محدد'}\nكلمة السر: ${p.accPass || 'غير محدد'}` : '',
+            acceptedAt: null,
+            date: new Date().toLocaleDateString('ar-IQ')
+        };
+        allOrders.unshift(newOrder);
+        localStorage.setItem('elite_orders', JSON.stringify(allOrders));
+
+        const msgs = getUserMessages(u.username);
+        msgs.push({
+            sender: 'user',
+            text: `طلب شراء جديد #${orderId}\nالسلعة: ${p.name} (آيدي: #${p.id})\nالمبلغ: ${p.price}\nتم التحويل من رقم: ${senderPhone}`,
+            img: receiptUrl
+        });
+        saveUserMessages(u.username, msgs);
+
+        const tgCaption = `${TG_BADGE_VIP} <b>إشعار طلب شراء جديد - متجر ليدر - Ledar Store</b>
+━━━━━━━━━━━━━━━━━━━━
+🆔 <b>رقم الطلب:</b> <code>#${orderId}</code>
+👤 <b>المشتري:</b> @${u.username}
+📦 <b>السلعة:</b> ${p.name} (آيدي: #${p.id})
+🏷️ <b>القسم:</b> ${p.category}
+💰 <b>المبلغ:</b> ${p.price}
+📱 <b>الرقم المحول منه:</b> <code>${senderPhone}</code>
+🔗 <b>نوع الربط:</b> ${p.linkType}
+🛡️ <b>الضمان:</b> ${p.warranty}
+━━━━━━━━━━━━━━━━━━━━
+💳 <b>طرق دفع المتجر المعتمدة:</b>
+${TG_EMOJI_ASIA} <b>آسيا سيل:</b> <code>${p.asia || 'غير متوفر'}</code>
+${TG_EMOJI_ATHER} <b>زين أثير:</b> <code>${p.ather || 'غير متوفر'}</code>
+${TG_EMOJI_MASTER} <b>ماستر كارد:</b> <code>${p.master || 'غير متوفر'}</code>
+━━━━━━━━━━━━━━━━━━━━
+📸 <i>صورة إيصال التحويل مرفقة أعلاه للتدقيق 👆</i>`;
+
+        try {
+            const tgFormData = new FormData();
+            tgFormData.append('chat_id', TELEGRAM_CHAT_ID);
+            tgFormData.append('caption', tgCaption);
+            tgFormData.append('parse_mode', 'HTML');
+            tgFormData.append('photo', receiptFile);
+
+            fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendPhoto`, {
+                method: 'POST',
+                body: tgFormData
+            }).catch(e => console.log('TG Send Error', e));
+        } catch (e) {
+            console.log('TG Error', e);
+        }
+
+        closeCheckoutModal();
+        showToast('تم إرسال الطلب وإشعار البوت في تليجرام بنجاح!');
+        switchTab('chat');
+    }
+
+    // ----------------- طلب وساطة بين طرفين -----------------
+    function openEscrowModal() {
+        document.getElementById('escrow-modal').style.display = 'flex';
+    }
+
+    function closeEscrowModal() {
+        document.getElementById('escrow-modal').style.display = 'none';
+    }
+
+    function submitEscrowRequest() {
+        const seller = document.getElementById('escrow-seller').value.trim();
+        const buyer = document.getElementById('escrow-buyer').value.trim();
+        const item = document.getElementById('escrow-item').value.trim();
+        const amount = document.getElementById('escrow-amount').value.trim();
+        const notes = document.getElementById('escrow-notes').value.trim() || 'لا توجد ملاحظات';
+
+        if (!seller || !buyer || !item || !amount) {
+            showToast('يرجى ملء جميع الحقول المطلوبة لطلب الوساطة', 'fa-triangle-exclamation', true);
+            return;
+        }
+
+        const escrowId = 'ESC-' + Math.floor(1000 + Math.random() * 9000);
+
+        const tgEscrowMsg = `${TG_BADGE_VIP} <b>طلب وساطة معتمدة جديد - متجر ليدر 🤝</b>
+━━━━━━━━━━━━━━━━━━━━
+🆔 <b>رقم الوساطة:</b> <code>#${escrowId}</code>
+👤 <b>البائع:</b> ${seller}
+👥 <b>المشتري:</b> ${buyer}
+🎮 <b>السلعة / الحساب:</b> ${item}
+💵 <b>المبلغ المتفق عليه:</b> ${amount}
+📝 <b>الشروط والملاحظات:</b> ${notes}
+━━━━━━━━━━━━━━━━━━━━
+⚡ <i>يرجى التواصل مع الطرفين لبدء إجراءات الاستلام والتسليم المضمون.</i>`;
+
+        fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                chat_id: TELEGRAM_CHAT_ID,
+                text: tgEscrowMsg,
+                parse_mode: 'HTML'
+            })
+        }).catch(e => console.log('Escrow Error', e));
+
+        closeEscrowModal();
+        showToast('تم إرسال طلب الوساطة للإدارة بنجاح وسيتم التواصل معكم!');
+        
+        document.getElementById('escrow-seller').value = '';
+        document.getElementById('escrow-buyer').value = '';
+        document.getElementById('escrow-item').value = '';
+        document.getElementById('escrow-amount').value = '';
+        document.getElementById('escrow-notes').value = '';
+    }
+
+    // ----------------- قسم طلباتي وخزنة الحسابات -----------------
+    function openMyOrdersModal() {
+        const u = getCurrentUser();
+        const modal = document.getElementById('my-orders-modal');
+        const listContainer = document.getElementById('my-orders-list');
+        listContainer.innerHTML = '';
+
+        const allOrders = JSON.parse(localStorage.getItem('elite_orders') || '[]');
+        const myOrders = allOrders.filter(o => o.username === u.username);
+
+        if (myOrders.length === 0) {
+            listContainer.innerHTML = '<p style="text-align:center; color:var(--text-muted); padding:20px;">ليس لديك أي طلبات سابقة حتى الآن.</p>';
+        } else {
+            myOrders.forEach(o => {
+                let statusHtml = '';
+                let detailsBox = '';
+
+                if (o.status === 'pending') {
+                    statusHtml = '<span class="status-badge status-pending">🟡 قيد المراجعة</span>';
+                } else if (o.status === 'unclear') {
+                    statusHtml = '<span class="status-badge status-unclear">🟠 غير واضح</span>';
+                    detailsBox = `<div style="background:#26180a; border:1px solid #e67e22; padding:8px; border-radius:8px; margin-top:8px; font-size:12px; color:#f39c12;"><b>ملاحظة الإدارة:</b> ${o.statusNote || 'الإيصال غير واضح أو المبلغ غير مكتمل، يرجى مراسلة الدعم.'}</div>`;
+                } else if (o.status === 'rejected') {
+                    statusHtml = '<span class="status-badge status-rejected">🔴 تم الرفض</span>';
+                    detailsBox = `<div style="background:#200; border:1px solid var(--danger); padding:8px; border-radius:8px; margin-top:8px; font-size:12px; color:#ff9999;"><b>سبب الرفض:</b> ${o.statusNote || 'تم رفض العملية من قبل الإدارة.'}</div>`;
+                } else if (o.status === 'accepted') {
+                    statusHtml = '<span class="status-badge status-accepted">🟢 تم القبول والتسليم</span>';
+                    
+                    const acceptedTime = o.acceptedAt ? new Date(o.acceptedAt).getTime() : Date.now();
+                    const warrantyDurationMs = 24 * 60 * 60 * 1000;
+                    const expireTime = acceptedTime + warrantyDurationMs;
+
+                    detailsBox = `
+                        <div style="background:#0a200a; border:1px solid var(--success); padding:10px; border-radius:8px; margin-top:8px; font-size:12px;">
+                            <div style="background:#000; border:1px solid var(--gold); padding:6px 10px; border-radius:6px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
+                                <span style="color:var(--gold); font-size:11px; font-weight:700;"><i class="fa-solid fa-clock-rotate-left"></i> عداد الضمان:</span>
+                                <span id="timer-${o.orderId}" style="color:#fff; font-weight:700; font-size:12px;">جاري الحساب...</span>
+                            </div>
+
+                            <div style="color:var(--success); font-weight:700; margin-bottom:4px;">🔐 بيانات الحساب المسلم:</div>
+                            <div style="background:#000; padding:8px; border-radius:6px; color:#fff; word-break:break-all; white-space:pre-line;">${o.accountCreds}</div>
+                            <button class="copy-btn" style="margin-top:6px; width:100%; justify-content:center;" onclick="copyText('${o.accountCreds.replace(/\n/g, ' ')}')"><i class="fa-solid fa-copy"></i> نسخ بيانات الحساب</button>
+                            
+                            <div style="margin-top:10px; padding:8px; background:rgba(212,175,55,0.15); border:1px dashed var(--gold); border-radius:6px; font-size:11px; color:var(--gold-light); text-align:center;">
+                                ⚠️ <b>ملاحظة:</b> لتغيير المعلومات واستلام الأكواد، تواصل تليجرام: <b>@Tcalhan</b>
+                                <br>
+                                <a href="https://t.me/Tcalhan" target="_blank" style="display:inline-block; margin-top:5px; color:#000; background:var(--gold); padding:4px 12px; border-radius:6px; text-decoration:none; font-weight:700;">فتح تلجرام الإدارة</a>
+                            </div>
+                        </div>
+                    `;
+
+                    setTimeout(() => startWarrantyTimer(`timer-${o.orderId}`, expireTime), 100);
+                }
+
+                listContainer.innerHTML += `
+                    <div class="order-card">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                            <b style="color:var(--gold); font-size:13px;">${o.productName} (آيدي: #${o.productId})</b>
+                            ${statusHtml}
+                        </div>
+                        <div style="font-size:11px; color:var(--text-muted);">رقم الطلب: #${o.orderId} | المبلغ: ${o.price} | محول من: ${o.senderPhone}</div>
+                        ${detailsBox}
+                    </div>
+                `;
+            });
+        }
+
+        modal.style.display = 'flex';
+    }
+
+    function startWarrantyTimer(elementId, expireTime) {
+        function update() {
+            const el = document.getElementById(elementId);
+            if (!el) return;
+            const now = Date.now();
+            const diff = expireTime - now;
+
+            if (diff <= 0) {
+                el.innerText = "انتهت فترة الضمان بنجاح ✅";
+                el.style.color = "var(--success)";
+                return;
+            }
+
+            const hours = Math.floor(diff / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+            el.innerText = `${hours < 10 ? '0' : ''}${hours}:${minutes < 10 ? '0' : ''}${minutes}:${seconds < 10 ? '0' : ''}${seconds} متبقي`;
+            setTimeout(update, 1000);
+        }
+        update();
+    }
+
+    // ----------------- الدعم الفني -----------------
+    let activeAdminChatUser = null;
+
+    function openChatSection() {
+        if (isAdmin()) {
+            document.getElementById('user-chat-view').style.display = 'none';
+            document.getElementById('admin-chat-view').style.display = 'flex';
+            document.getElementById('chat-header-title').innerText = "محادثات الزبائن وتدقيق الطلبات";
+            loadAdminChatList();
+        } else {
+            document.getElementById('admin-chat-view').style.display = 'none';
+            document.getElementById('user-chat-view').style.display = 'flex';
+            document.getElementById('chat-header-title').innerText = "مراسلة الإدارة";
+            loadUserChat();
+        }
+    }
+
+    function getUserMessages(username) {
+        return JSON.parse(localStorage.getItem('chat_msgs_' + username) || '[]');
+    }
+
+    function saveUserMessages(username, msgs) {
+        localStorage.setItem('chat_msgs_' + username, JSON.stringify(msgs));
+        let chatUsers = JSON.parse(localStorage.getItem('elite_chat_users') || '[]');
+        if (!chatUsers.includes(username)) {
+            chatUsers.push(username);
+            localStorage.setItem('elite_chat_users', JSON.stringify(chatUsers));
+        }
+    }
+
+    function loadUserChat() {
+        const u = getCurrentUser();
+        const box = document.getElementById('user-chat-box');
+        box.innerHTML = '';
+        const msgs = getUserMessages(u.username);
+
+        if (msgs.length === 0) {
+            box.innerHTML = `<div class="bubble admin">أهلاً بك في دعم متجر ليدر. يمكنك مراسلة الإدارة هنا أو إرفاق صورة إيصال الدفع وسنرد عليك فوراً.</div>`;
+            return;
+        }
+
+        msgs.forEach(m => {
+            box.innerHTML += `
+                <div class="bubble ${m.sender}">
+                    ${m.text ? `<div style="white-space:pre-line;">${m.text}</div>` : ''}
+                    ${m.img ? `<img src="${m.img}" onclick="window.open('${m.img}', '_blank')">` : ''}
+                </div>
+            `;
+        });
+        box.scrollTop = box.scrollHeight;
+    }
+
+    function userSendTextMsg() {
+        const u = getCurrentUser();
+        const txt = document.getElementById('user-chat-txt').value.trim();
+        if (!txt) return;
+
+        const msgs = getUserMessages(u.username);
+        msgs.push({ sender: 'user', text: txt, img: null });
+        saveUserMessages(u.username, msgs);
+
+        document.getElementById('user-chat-txt').value = '';
+        loadUserChat();
+    }
+
+    async function userSendImageMsg() {
+        const u = getCurrentUser();
+        const file = document.getElementById('user-chat-file').files[0];
+        if (!file) return;
+
+        const imgUrl = await uploadImageFile(file);
+        if (imgUrl) {
+            const msgs = getUserMessages(u.username);
+            msgs.push({ sender: 'user', text: 'صورة مرفقة / إيصال:', img: imgUrl });
+            saveUserMessages(u.username, msgs);
+            loadUserChat();
+        }
+        document.getElementById('user-chat-file').value = '';
+    }
+
+    function loadAdminChatList() {
+        document.getElementById('admin-chats-list').style.display = 'block';
+        document.getElementById('admin-reply-box').style.display = 'none';
+
+        const container = document.getElementById('admin-conversations-box');
+        container.innerHTML = '';
+        const chatUsers = JSON.parse(localStorage.getItem('elite_chat_users') || '[]');
+
+        if (chatUsers.length === 0) {
+            container.innerHTML = '<p style="text-align:center; color:var(--text-muted); padding:30px;">لا توجد أي رسائل واردة حتى الآن</p>';
+            return;
+        }
+
+        chatUsers.forEach(uname => {
+            const msgs = getUserMessages(uname);
+            const last = msgs[msgs.length - 1];
+            const preview = last ? (last.text ? last.text.substring(0, 35) + '...' : 'صورة مرفقة') : 'رسالة جديدة';
+            container.innerHTML += `
+                <div style="background:var(--bg-card); border:1px solid var(--border); padding:12px; border-radius:12px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                        <div style="color:var(--gold); font-weight:700; font-size:14px;"><i class="fa-solid fa-user"></i> الزبون: @${uname}</div>
+                        <div style="font-size:12px; color:var(--text-muted);">${preview}</div>
+                    </div>
+                    <button class="gold-btn" style="width:auto; padding:6px 14px; font-size:12px;" onclick="openAdminReplyView('${uname}')">فتح والمحادثة</button>
+                </div>
+            `;
+        });
+    }
+
+    function openAdminReplyView(uname) {
+        activeAdminChatUser = uname;
+        document.getElementById('admin-chats-list').style.display = 'none';
+        document.getElementById('admin-reply-box').style.display = 'flex';
+        document.getElementById('replying-to-user').innerText = 'المحادثة مع الزبون: @' + uname;
+        
+        renderAdminCustomerOrders(uname);
+        renderAdminChatMessages();
+    }
+
+    function backToAdminChatList() {
+        activeAdminChatUser = null;
+        loadAdminChatList();
+    }
+
+    function renderAdminCustomerOrders(uname) {
+        const orderBox = document.getElementById('admin-customer-order-actions');
+        const allOrders = JSON.parse(localStorage.getItem('elite_orders') || '[]');
+        const pendingOrders = allOrders.filter(o => o.username === uname && o.status === 'pending');
+
+        if (pendingOrders.length === 0) {
+            orderBox.style.display = 'none';
+            orderBox.innerHTML = '';
+            return;
+        }
+
+        const latestOrder = pendingOrders[0];
+        orderBox.style.display = 'block';
+        orderBox.innerHTML = `
+            <div style="background:#161616; border:1px solid var(--gold); border-radius:10px; padding:10px; margin-bottom:8px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                    <b style="color:var(--gold); font-size:13px;">📌 طلب معلق قيد المراجعة #${latestOrder.orderId}</b>
+                    <span class="status-badge status-pending">طلب معلق</span>
+                </div>
+                
+                <div style="font-size:12px; color:#fff; margin-bottom:4px;">
+                    📦 <b>السلعة:</b> ${latestOrder.productName} (آيدي: #${latestOrder.productId}) | <b>المبلغ:</b> ${latestOrder.price}
+                </div>
+
+                <div style="font-size:12px; color:#fff; margin-bottom:4px;">
+                    📱 <b>الرقم الذي حوّل منه الزبون:</b> <span style="color:var(--gold); font-weight:700;">${latestOrder.senderPhone}</span>
+                </div>
+
+                <div style="font-size:11px; color:var(--text-muted); margin-bottom:6px;">
+                    💳 <b>أرقام استلام المتجر للسلعة:</b><br>
+                    • آسيا: <b>${latestOrder.asia}</b> | • أثير: <b>${latestOrder.ather}</b> | • ماستر: <b>${latestOrder.master}</b>
+                </div>
+                
+                <div style="margin:6px 0;">
+                    <div style="font-size:11px; color:var(--gold); margin-bottom:3px;">🖼️ صورة إيصال التحويل (اضغط للتكبير):</div>
+                    ${latestOrder.receiptImg ? `<img src="${latestOrder.receiptImg}" style="width:100%; max-height:160px; object-fit:contain; background:#000; border-radius:8px; border:1px solid var(--border); cursor:pointer;" onclick="window.open('${latestOrder.receiptImg}', '_blank')">` : '<div style="font-size:11px; color:red;">لا يوجد إيصال</div>'}
+                </div>
+
+                <div style="display:flex; gap:6px; margin-top:8px;">
+                    <button class="gold-btn" style="flex:1; padding:7px; font-size:11px; background:var(--success); color:#fff;" onclick="adminActionOrder('${latestOrder.orderId}', 'accept')">🟢 موافقة</button>
+                    <button class="gold-btn" style="flex:1; padding:7px; font-size:11px; background:#e67e22; color:#fff;" onclick="adminActionOrder('${latestOrder.orderId}', 'unclear')">🟠 غير واضح</button>
+                    <button class="gold-btn" style="flex:1; padding:7px; font-size:11px; background:var(--danger); color:#fff;" onclick="adminActionOrder('${latestOrder.orderId}', 'reject')">🔴 رفض</button>
+                </div>
+            </div>
+        `;
+    }
+
+    function renderAdminChatMessages() {
+        if (!activeAdminChatUser) return;
+        const box = document.getElementById('admin-selected-chat-messages');
+        box.innerHTML = '';
+        const msgs = getUserMessages(activeAdminChatUser);
+
+        msgs.forEach(m => {
+            box.innerHTML += `
+                <div class="bubble ${m.sender}">
+                    <div style="font-size:10px; color:var(--gold); margin-bottom:2px;">${m.sender === 'user' ? 'الزبون' : 'رد الإدارة'}</div>
+                    ${m.text ? `<div style="white-space:pre-line;">${m.text}</div>` : ''}
+                    ${m.img ? `<img src="${m.img}" onclick="window.open('${m.img}', '_blank')">` : ''}
+                </div>
+            `;
+        });
+        box.scrollTop = box.scrollHeight;
+    }
+
+    function adminSendReplyNow() {
+        if (!activeAdminChatUser) return;
+        const txt = document.getElementById('admin-reply-input').value.trim();
+        if (!txt) return;
+
+        const msgs = getUserMessages(activeAdminChatUser);
+        msgs.push({ sender: 'admin', text: txt, img: null });
+        saveUserMessages(activeAdminChatUser, msgs);
+
+        document.getElementById('admin-reply-input').value = '';
+        renderAdminChatMessages();
+        showToast('تم إرسال ردك إلى الزبون');
+    }
+
+    function adminActionOrder(orderId, action) {
+        let allOrders = JSON.parse(localStorage.getItem('elite_orders') || '[]');
+        const idx = allOrders.findIndex(o => o.orderId === orderId);
+        if (idx === -1) return;
+
+        const order = allOrders[idx];
+
+        if (action === 'accept') {
+            let creds = order.accountCreds;
+            if (!creds) {
+                openPromptModal('تسليم الحساب', 'اكتب الإيميل وكلمة السر لتسليمها فوراً للزبون:', 'مثال: الإيميل: test@gmail.com | كلمة السر: 12345', function(val) {
+                    if (!val) {
+                        showToast('يرجى كتابة بيانات الحساب', 'fa-triangle-exclamation', true);
+                        return;
+                    }
+                    finalizeOrderAccept(orderId, val);
+                });
+            } else {
+                finalizeOrderAccept(orderId, creds);
+            }
+
+        } else if (action === 'unclear') {
+            openPromptModal('حالة الطلب: غير واضح', 'اكتب ملاحظة أو سبب كون الإيصال/التحويل غير واضح:', 'مثال: الإيصال غير مقروء، يرجى إرسال لقطة واضحة في الشات...', function(reason) {
+                if (!reason) {
+                    showToast('يجب كتابة الملاحظة لتصل للزبون', 'fa-triangle-exclamation', true);
+                    return;
+                }
+                allOrders[idx].status = 'unclear';
+                allOrders[idx].statusNote = reason;
+                localStorage.setItem('elite_orders', JSON.stringify(allOrders));
+
+                const msgs = getUserMessages(order.username);
+                msgs.push({
+                    sender: 'admin',
+                    text: `🟠 حالة الطلب #${orderId}: غير واضح\nالملاحظة: ${reason}\nيرجى إرسال إيصال أوضح هنا في المحادثة.`,
+                    img: null
+                });
+                saveUserMessages(order.username, msgs);
+
+                showToast('تم تحديث حالة الطلب واختفى كرت الطلب');
+                renderAdminCustomerOrders(order.username);
+                renderAdminChatMessages();
+            });
+
+        } else if (action === 'reject') {
+            openPromptModal('رفض الطلب', 'اكتب سبب رفض العملية:', 'مثال: لم يصل التحويل، أو الرقم غير مطابق...', function(reason) {
+                if (!reason) {
+                    showToast('يجب كتابة سبب الرفض', 'fa-triangle-exclamation', true);
+                    return;
+                }
+                allOrders[idx].status = 'rejected';
+                allOrders[idx].statusNote = reason;
+                localStorage.setItem('elite_orders', JSON.stringify(allOrders));
+
+                const msgs = getUserMessages(order.username);
+                msgs.push({
+                    sender: 'admin',
+                    text: `❌ تم رفض طلب الشراء #${orderId}\nسبب الرفض: ${reason}`,
+                    img: null
+                });
+                saveUserMessages(order.username, msgs);
+
+                showToast('تم رفض الطلب واختفى كرت الطلب');
+                renderAdminCustomerOrders(order.username);
+                renderAdminChatMessages();
+            });
+        }
+    }
+
+    // الموافقة وحذف الحساب المباع تلقائياً من السوق
+    function finalizeOrderAccept(orderId, creds) {
+        let allOrders = JSON.parse(localStorage.getItem('elite_orders') || '[]');
+        const idx = allOrders.findIndex(o => o.orderId === orderId);
+        if (idx === -1) return;
+
+        const soldOrder = allOrders[idx];
+        allOrders[idx].status = 'accepted';
+        allOrders[idx].accountCreds = creds;
+        allOrders[idx].statusNote = '';
+        allOrders[idx].acceptedAt = new Date().toISOString();
+        localStorage.setItem('elite_orders', JSON.stringify(allOrders));
+
+        // حذف السلعة تلقائياً من السوق لأنها بيعت
+        let currentProducts = getStoredProducts();
+        currentProducts = currentProducts.filter(p => String(p.id) !== String(soldOrder.productId));
+        saveStoredProducts(currentProducts);
+        loadProducts(); // تحديث السوق فوراً
+
+        const msgs = getUserMessages(soldOrder.username);
+        msgs.push({
+            sender: 'admin',
+            text: `✅ تمت الموافقة على طلبك #${orderId} وتسليم الحساب بنجاح!\n\nبيانات الدخول:\n${creds}\n\n⚠️ لتغيير المعلومات واستلام الأكواد، تواصل تليجرام: @Tcalhan`,
+            img: null
+        });
+        saveUserMessages(soldOrder.username, msgs);
+
+        showToast('تمت الموافقة، تسليم الحساب، وحذفه تلقائياً من السوق!');
+        renderAdminCustomerOrders(soldOrder.username);
+        renderAdminChatMessages();
+    }
+
+    // ----------------- قناة التليجرام: حذف فوري ومضمون + وقت حقيقي بدون مشاهدات -----------------
+    let tempChannelImg = null;
+    async function channelFilePicked() {
+        const file = document.getElementById('ch-file-input').files[0];
+        if (file) {
+            tempChannelImg = await uploadImageFile(file);
+            showToast('تم تجهيز الصورة للنشر في القناة');
+        }
+    }
+
+    async function postToChannelNow() {
+        if (!isAdmin()) return;
+        const text = document.getElementById('ch-text-input').value.trim();
+        if (!text && !tempChannelImg) return;
+
+        const postId = 'post_' + Date.now();
+        const now = new Date();
+        const realTimeString = now.toLocaleTimeString('ar-IQ', { hour: '2-digit', minute: '2-digit' });
+
+        const newPost = {
+            id: postId,
+            text: text,
+            img: tempChannelImg || '',
+            createdAt: Date.now(),
+            timeString: realTimeString
+        };
+
+        // حفظ محلي مباشر
+        let localPosts = JSON.parse(localStorage.getItem('elite_channel_posts') || '[]');
+        localPosts.unshift(newPost);
+        localStorage.setItem('elite_channel_posts', JSON.stringify(localPosts));
+
+        document.getElementById('ch-text-input').value = '';
+        tempChannelImg = null;
+        document.getElementById('ch-file-input').value = '';
+
+        renderChannelPostsDirectly();
+        showToast('تم نشر الرسالة في القناة بنجاح');
+    }
+
+    function deleteChannelPost(postId) {
+        if (!isAdmin()) return;
+
+        // حذف فوري ومباشر بالمطابقة النصية الصارمة
+        let localPosts = JSON.parse(localStorage.getItem('elite_channel_posts') || '[]');
+        localPosts = localPosts.filter(p => String(p.id) !== String(postId));
+        localStorage.setItem('elite_channel_posts', JSON.stringify(localPosts));
+
+        renderChannelPostsDirectly();
+        showToast('تم حذف المنشور من القناة نهائياً');
+    }
+
+    function renderChannelPostsDirectly() {
+        const feed = document.getElementById('channel-feed');
+        feed.innerHTML = '';
+        const posts = JSON.parse(localStorage.getItem('elite_channel_posts') || '[]');
+
+        if (posts.length === 0) {
+            feed.innerHTML = `
+                <div class="tg-post">
+                    <div style="font-size:12px; color:var(--gold); font-weight:700;">LEDAR STORE VIP 👑</div>
+                    <p style="font-size:13px; line-height:1.5; margin-top:5px;">أهلاً بكم في القناة الرسمية لمتجر ليدر! هنا يتم نشر كافة العروض والحسابات الحصرية أولاً بأول.</p>
+                    <div class="tg-footer"><span>رسمي</span></div>
+                </div>
+            `;
+            return;
+        }
+
+        posts.forEach(p => {
+            feed.innerHTML += `
+                <div class="tg-post" id="post-${p.id}">
+                    ${isAdmin() ? `<button class="tg-del-btn" onclick="deleteChannelPost('${p.id}')"><i class="fa-solid fa-trash"></i> مسح</button>` : ''}
+                    <div style="font-size:12px; color:var(--gold); font-weight:700;">LEDAR STORE VIP 👑</div>
+                    ${p.img ? `<img src="${p.img}">` : ''}
+                    ${p.text ? `<p style="font-size:13px; line-height:1.5; margin-top:5px;">${p.text}</p>` : ''}
+                    <div class="tg-footer"><span>${p.timeString || 'الآن'}</span></div>
+                </div>
+            `;
+        });
+    }
+
+    function openChannelEdit() {
+        document.getElementById('channel-modal').style.display = 'flex';
+    }
+
+    async function saveChannelSettings() {
+        const newTitle = document.getElementById('edit-ch-title').value.trim();
+        const file = document.getElementById('edit-ch-avatar').files[0];
+
+        if (newTitle) {
+            document.getElementById('ch-title').innerHTML = `${newTitle} <i class="fa-solid fa-circle-check"></i>`;
+        }
+        if (file) {
+            const url = await uploadImageFile(file);
+            if (url) document.getElementById('ch-avatar').src = url;
+        }
+
+        document.getElementById('channel-modal').style.display = 'none';
+        showToast('تم تعديل معلومات القناة بنجاح');
+    }
+
+    // ----------------- السلة -----------------
+    let cart = [];
+    function renderCart() {
+        const area = document.getElementById('cart-items-container');
+        area.innerHTML = '';
+        if (cart.length === 0) {
+            area.innerHTML = '<p style="text-align:center; color:var(--text-muted); margin-top:40px;">السلة فارغة حالياً</p>';
+            return;
+        }
+        cart.forEach((item, idx) => {
+            area.innerHTML += `
+                <div style="display:flex; justify-content:space-between; align-items:center; background:var(--bg-card); padding:10px; border-radius:12px; margin-bottom:8px; border:1px solid var(--border);">
+                    <img src="${(item.images && item.images.length > 0) ? item.images[0] : item.img}" style="width:45px; height:45px; border-radius:8px; object-fit:cover;">
+                    <div style="flex:1; margin-right:10px;">
+                        <div style="font-size:13px; font-weight:700;">${item.name} (#${item.id})</div>
+                        <div style="font-size:12px; color:var(--gold);">${item.price}</div>
+                    </div>
+                    <button onclick="cart.splice(${idx},1);renderCart();" style="background:none; border:none; color:var(--danger); cursor:pointer;"><i class="fa-solid fa-trash"></i></button>
+                </div>
+            `;
+        });
+    }
+
+    window.onload = function() {
+        if (getCurrentUser()) {
+            initAppSession();
+        }
+    };
+</script>
+
+</body>
+</html>
